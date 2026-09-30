@@ -1,4 +1,4 @@
-package br.com.alura.runnercircleapi;
+package br.com.alura.runnercircleapi.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

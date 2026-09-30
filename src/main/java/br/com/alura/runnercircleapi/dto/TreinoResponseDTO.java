@@ -1,4 +1,6 @@
-package br.com.alura.runnercircleapi;
+package br.com.alura.runnercircleapi.dto;
+
+import br.com.alura.runnercircleapi.model.TipoTreino;
 
 import java.time.LocalDateTime;
 

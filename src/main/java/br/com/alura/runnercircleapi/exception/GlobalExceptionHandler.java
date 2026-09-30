@@ -1,4 +1,4 @@
-package br.com.alura.runnercircleapi;
+package br.com.alura.runnercircleapi.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;

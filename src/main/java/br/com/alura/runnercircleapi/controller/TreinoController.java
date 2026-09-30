@@ -1,9 +1,15 @@
-package br.com.alura.runnercircleapi;
+package br.com.alura.runnercircleapi.controller;
+
+import br.com.alura.runnercircleapi.dto.TreinoRequestDTO;
+import br.com.alura.runnercircleapi.dto.TreinoResponseDTO;
+import br.com.alura.runnercircleapi.mapper.TreinoMapper;
+import br.com.alura.runnercircleapi.model.TipoTreino;
+import br.com.alura.runnercircleapi.model.Treino;
+import br.com.alura.runnercircleapi.service.TreinoService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,8 +20,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/treinos")
@@ -23,36 +32,50 @@ import java.util.List;
 public class TreinoController {
 
     private final TreinoService treinoService;
+    private final TreinoMapper treinoMapper;
 
-    public TreinoController(TreinoService treinoService) {
+    public TreinoController(TreinoService treinoService, TreinoMapper treinoMapper) {
         this.treinoService = treinoService;
+        this.treinoMapper = treinoMapper;
     }
 
     @GetMapping
-    @Operation(summary = "Lista os treinos, com filtro opcional por tipo (CAMINHADA ou CORRIDA)")
+    @Operation(summary = "Lista os treinos, com filtro opcional por tipo ( )")
     public List<TreinoResponseDTO> listar(@RequestParam(required = false) TipoTreino tipoTreino) {
-        return treinoService.listar(tipoTreino);
+        return treinoService.listar(tipoTreino).stream()
+                .map(treinoMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Busca um treino pelo id")
     public ResponseEntity<TreinoResponseDTO> buscarPorId(@PathVariable Long id) {
         return treinoService.buscarPorId(id)
-                .map(ResponseEntity::ok)
+                .map(treino -> ResponseEntity.ok(treinoMapper.toResponseDTO(treino)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     @Operation(summary = "Cria um novo treino")
     public ResponseEntity<TreinoResponseDTO> criar(@Valid @RequestBody TreinoRequestDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(treinoService.criar(dto));
+        Treino treino = treinoMapper.toEntity(dto);
+        Treino treinoSalvo = treinoService.criar(treino);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(treinoSalvo.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(treinoMapper.toResponseDTO(treinoSalvo));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Atualiza um treino existente")
     public ResponseEntity<TreinoResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody TreinoRequestDTO dto) {
-        return treinoService.atualizar(id, dto)
-                .map(ResponseEntity::ok)
+        return treinoService.buscarPorId(id)
+                .map(treino -> {
+                    treinoMapper.atualizarEntity(treino, dto);
+                    Treino treinoAtualizado = treinoService.atualizar(id, treino);
+                    return ResponseEntity.ok(treinoMapper.toResponseDTO(treinoAtualizado));
+                })
                 .orElse(ResponseEntity.notFound().build());
     }
 
