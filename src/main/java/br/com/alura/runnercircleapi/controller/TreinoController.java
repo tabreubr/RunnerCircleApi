@@ -8,8 +8,11 @@ import br.com.alura.runnercircleapi.model.Treino;
 import br.com.alura.runnercircleapi.service.TreinoService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +22,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
@@ -55,11 +60,19 @@ public class TreinoController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
-    @Operation(summary = "Cria um novo treino")
-    public ResponseEntity<TreinoResponseDTO> criar(@Valid @RequestBody TreinoRequestDTO dto) {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Cria um novo treino, com imagem opcional (jpg, jpeg, png ou webp, até 5 MB)")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(
+            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+            encoding = {
+                    @Encoding(name = "dados", contentType = MediaType.APPLICATION_JSON_VALUE),
+                    @Encoding(name = "imagem", contentType = "image/jpeg, image/png, image/webp")
+            }))
+    public ResponseEntity<TreinoResponseDTO> criar(
+            @Valid @RequestPart("dados") TreinoRequestDTO dto,
+            @RequestPart(value = "imagem", required = false) MultipartFile imagem) {
         Treino treino = treinoMapper.toEntity(dto);
-        Treino treinoSalvo = treinoService.criar(treino);
+        Treino treinoSalvo = treinoService.criar(treino, imagem);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(treinoSalvo.getId())
