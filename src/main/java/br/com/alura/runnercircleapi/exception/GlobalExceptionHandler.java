@@ -23,4 +23,10 @@ public class GlobalExceptionHandler {
 
         return erros;
     }
+
+    @ExceptionHandler(RecursoNaoEncontradoException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> tratarRecursoNaoEncontrado(RecursoNaoEncontradoException exception) {
+        return Map.of("erro", exception.getMessage());
+    }
 }

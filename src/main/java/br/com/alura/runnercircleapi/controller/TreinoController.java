@@ -61,7 +61,7 @@ public class TreinoController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Cria um novo treino, com imagem opcional (jpg, jpeg, png ou webp, até 5 MB)")
+    @Operation(summary = "Cria um novo treino para o usuário informado em userId (temporário, até existir autenticação), com imagem opcional (jpg, jpeg, png ou webp, até 5 MB)")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(
             mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
             encoding = {
@@ -69,10 +69,11 @@ public class TreinoController {
                     @Encoding(name = "imagem", contentType = "image/jpeg, image/png, image/webp")
             }))
     public ResponseEntity<TreinoResponseDTO> criar(
+            @RequestParam Long userId,
             @Valid @RequestPart("dados") TreinoRequestDTO dto,
             @RequestPart(value = "imagem", required = false) MultipartFile imagem) {
         Treino treino = treinoMapper.toEntity(dto);
-        Treino treinoSalvo = treinoService.criar(treino, imagem);
+        Treino treinoSalvo = treinoService.criar(treino, userId, imagem);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(treinoSalvo.getId())

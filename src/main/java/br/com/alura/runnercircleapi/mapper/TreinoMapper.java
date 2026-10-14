@@ -1,8 +1,10 @@
 package br.com.alura.runnercircleapi.mapper;
 
+import br.com.alura.runnercircleapi.dto.AutorResponseDTO;
 import br.com.alura.runnercircleapi.dto.TreinoRequestDTO;
 import br.com.alura.runnercircleapi.dto.TreinoResponseDTO;
 import br.com.alura.runnercircleapi.model.Treino;
+import br.com.alura.runnercircleapi.model.User;
 
 import org.springframework.stereotype.Component;
 
@@ -19,8 +21,16 @@ public class TreinoMapper {
                 treino.getBatimentos(),
                 treino.getDescricao(),
                 treino.getImagemUrl(),
-                treino.getDataCriacao()
+                treino.getDataCriacao(),
+                toAutorDTO(treino.getAutor())
         );
+    }
+
+    private AutorResponseDTO toAutorDTO(User autor) {
+        if (autor == null) {
+            return null;
+        }
+        return new AutorResponseDTO(autor.getNome(), autor.getUsername(), autor.getAvatarUrl());
     }
 
     public Treino toEntity(TreinoRequestDTO dto) {
