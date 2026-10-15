@@ -1,22 +1,26 @@
 package br.com.alura.runnercircleapi.service;
 
 import br.com.alura.runnercircleapi.exception.RecursoNaoEncontradoException;
-import br.com.alura.runnercircleapi.model.TipoTreino;
 import br.com.alura.runnercircleapi.model.Treino;
 import br.com.alura.runnercircleapi.model.User;
 import br.com.alura.runnercircleapi.repository.TreinoRepository;
 import br.com.alura.runnercircleapi.repository.UserRepository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class TreinoService {
+
+    private static final Sort ORDENACAO_PADRAO = Sort.by(Sort.Direction.DESC, "dataCriacao", "id");
 
     private final TreinoRepository treinoRepository;
     private final UserRepository userRepository;
@@ -29,16 +33,12 @@ public class TreinoService {
         this.imagemStorageService = imagemStorageService;
     }
 
-    public List<Treino> listar(TipoTreino tipoTreino) {
-        List<Treino> treinos = treinoRepository.findAll();
-
-        if (tipoTreino != null) {
-            treinos = treinos.stream()
-                    .filter(treino -> treino.getTipoTreino() == tipoTreino)
-                    .collect(Collectors.toList());
-        }
-
-        return treinos;
+    public Page<Treino> listar(String busca, Pageable pageable) {
+        // padrão sempre não nulo: sem busca vira "%%" e casa com qualquer descrição
+        String buscaPattern = "%" + (busca == null ? "" : busca.trim()) + "%";
+        // ordenação padrão fixa (id desempata timestamps iguais); ignora o sort enviado pelo cliente
+        Pageable ordenado = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), ORDENACAO_PADRAO);
+        return treinoRepository.findAllComAutor(buscaPattern, ordenado);
     }
 
     public Optional<Treino> buscarPorId(Long id) {

@@ -3,7 +3,6 @@ package br.com.alura.runnercircleapi.controller;
 import br.com.alura.runnercircleapi.dto.TreinoRequestDTO;
 import br.com.alura.runnercircleapi.dto.TreinoResponseDTO;
 import br.com.alura.runnercircleapi.mapper.TreinoMapper;
-import br.com.alura.runnercircleapi.model.TipoTreino;
 import br.com.alura.runnercircleapi.model.Treino;
 import br.com.alura.runnercircleapi.service.TreinoService;
 
@@ -12,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,8 +29,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/treinos")
@@ -45,11 +44,9 @@ public class TreinoController {
     }
 
     @GetMapping
-    @Operation(summary = "Lista os treinos, com filtro opcional por tipo ( )")
-    public List<TreinoResponseDTO> listar(@RequestParam(required = false) TipoTreino tipoTreino) {
-        return treinoService.listar(tipoTreino).stream()
-                .map(treinoMapper::toResponseDTO)
-                .collect(Collectors.toList());
+    @Operation(summary = "Lista os treinos paginados (page, size), do mais recente para o mais antigo, com busca opcional na descrição (sem diferenciar maiúsculas/minúsculas)")
+    public Page<TreinoResponseDTO> listar(@RequestParam(required = false) String busca, Pageable pageable) {
+        return treinoService.listar(busca, pageable).map(treinoMapper::toResponseDTO);
     }
 
     @GetMapping("/{id}")
