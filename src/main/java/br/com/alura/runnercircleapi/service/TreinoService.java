@@ -8,6 +8,7 @@ import br.com.alura.runnercircleapi.repository.TreinoRepository;
 import br.com.alura.runnercircleapi.repository.UserRepository;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -68,6 +69,30 @@ public class TreinoService {
             imagemStorageService.remover(imagemUrl);
             throw e;
         }
+    }
+
+    @Transactional
+    public Treino curtir(Long treinoId, Long userId) {
+        Treino treino = buscarTreinoOuFalhar(treinoId);
+        treino.curtir(buscarUserOuFalhar(userId));
+        return treino;
+    }
+
+    @Transactional
+    public Treino descurtir(Long treinoId, Long userId) {
+        Treino treino = buscarTreinoOuFalhar(treinoId);
+        treino.descurtir(buscarUserOuFalhar(userId));
+        return treino;
+    }
+
+    private Treino buscarTreinoOuFalhar(Long id) {
+        return treinoRepository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Treino não encontrado: " + id));
+    }
+
+    private User buscarUserOuFalhar(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado: " + id));
     }
 
     public Treino atualizar(Long id, Treino treino) {

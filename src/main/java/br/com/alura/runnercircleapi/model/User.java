@@ -104,6 +104,22 @@ public class User {
         return treinos;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof User outro)) {
+            return false;
+        }
+        return id != null && id.equals(outro.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return User.class.hashCode();
+    }
+
     public void adicionarTreino(Treino treino) {
         treinos.add(treino);
         treino.setAutor(this);

@@ -81,6 +81,18 @@ public class TreinoController {
         return ResponseEntity.created(location).body(treinoMapper.toResponseDTO(treinoSalvo));
     }
 
+    @PostMapping("/{id}/curtir")
+    @Operation(summary = "Curte um treino como o usuário informado em userId (temporário, até existir autenticação)")
+    public TreinoResponseDTO curtir(@PathVariable Long id, @RequestParam Long userId) {
+        return treinoMapper.toResponseDTO(treinoService.curtir(id, userId));
+    }
+
+    @DeleteMapping("/{id}/curtir")
+    @Operation(summary = "Remove a curtida do usuário informado em userId (temporário, até existir autenticação)")
+    public TreinoResponseDTO descurtir(@PathVariable Long id, @RequestParam Long userId) {
+        return treinoMapper.toResponseDTO(treinoService.descurtir(id, userId));
+    }
+
     @PutMapping("/{id}")
     @Operation(summary = "Atualiza um treino existente")
     public ResponseEntity<TreinoResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody TreinoRequestDTO dto) {

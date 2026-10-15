@@ -22,7 +22,8 @@ public class TreinoMapper {
                 treino.getDescricao(),
                 treino.getImagemUrl(),
                 treino.getDataCriacao(),
-                toAutorDTO(treino.getAutor())
+                toAutorDTO(treino.getAutor()),
+                treino.getCurtidas().size()
         );
     }
 
